@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profesora Julieta Galdames — Estado de Resultados</title>
+  <style>
+    :root { --c-navy:#363753; --c-ice:#DFE3EE; --c-white:#FEFEFE; --c-teal:#5CD2C6; --c-sunset:#FF6B6B; --c-sun:#FFD93D; --c-lime:#8DFF6B; --c-text:#1e293b; }
+    *{box-sizing:border-box}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--c-white);color:var(--c-text);margin:0;padding:84px 20px 24px}
+    /* Encabezado fijo */
+    .appbar{position:fixed;top:0;left:0;right:0;height:64px;background:var(--c-navy);color:#fff;display:flex;align-items:center;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+    .appbar-inner{max-width:980px;margin:auto;width:100%;display:flex;gap:12px;align-items:center;padding:0 12px}
+    .app-title{font-weight:900;letter-spacing:.2px}
+    .app-spacer{flex:1}
+    .app-time{font-variant-numeric:tabular-nums;font-weight:800}
+    .btn-app{background:var(--c-teal);color:var(--c-navy);border:none;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
+
+    .container{max-width:980px;margin:auto}
+    h1{font-size:28px;margin:0 0 6px;text-align:center;color:var(--c-navy)}
+    .sub{color:var(--c-navy);text-align:center;margin:0 0 16px;font-size:15px}
+
+    .toolbar{display:flex;gap:10px;justify-content:center;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+    select,input[type="text"],input[type="number"]{padding:10px 12px;border:2px solid var(--c-ice);border-radius:10px;background:var(--c-white);color:var(--c-text);font-weight:600}
+    .pill{font-size:13px;color:var(--c-navy);background:var(--c-ice);padding:4px 10px;border-radius:8px}
+
+    .btn{padding:12px 18px;border:none;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .08s,filter .15s}
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--c-teal);color:var(--c-navy)}
+    .btn-secondary{background:var(--c-sun);color:var(--c-navy)}
+
+    /* Enunciado */
+    .enunciado{background:var(--c-ice);border-left:8px solid var(--c-teal);border-radius:12px;padding:14px;margin-bottom:16px}
+    .enunciado h3{margin:0 0 8px;color:var(--c-navy);font-size:18px}
+
+    /* Tabla ER */
+    table{width:100%;border-collapse:collapse;margin-bottom:18px;background:var(--c-white);border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+    td,th{border:1px solid var(--c-ice);padding:12px;text-align:left;vertical-align:middle}
+    th{background:var(--c-navy);color:#fff}
+    .cell-wrapper{display:flex;align-items:center;gap:8px}
+    input.er{flex:1;border:none;padding:12px 16px;background:var(--c-ice);color:var(--c-navy);font-weight:800;text-align:right;border-radius:10px;font-size:22px;height:52px;transition:background .2s}
+    input.er:focus{outline:3px solid var(--c-teal);background:#eef9f8}
+    .icon{font-size:18px;font-weight:900;display:none}
+    .ok-icon{color:var(--c-lime)}
+    .bad-icon{color:var(--c-sunset)}
+    .ok{background:#d3f9d8}
+    .bad{background:#ffe0e0}
+
+    /* Crono */
+    #cronometro{font-size:20px;text-align:center;font-weight:900;margin:10px 0 8px;color:var(--c-navy)}
+    #timebar{height:12px;background:var(--c-ice);border-radius:999px;overflow:hidden;margin:0 auto 12px;max-width:640px}
+    #timebar-fill{height:100%;width:0%;background:linear-gradient(90deg,#8DFF6B,#FFD93D,#FF6B6B);transition:width 1s linear}
+    .shake{animation:shake .4s linear 3}
+    @keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}100%{transform:translateX(0)}}
+
+    /* Overlays */
+    #overlay,#overlayOk{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1000;color:#fff;font-size:32px;flex-direction:column;text-align:center;padding:20px}
+    #overlay{background:rgba(54,55,83,.88)}
+    #overlayOk{background:rgba(92,210,198,.92)}
+    #confeti{position:fixed;inset:0;pointer-events:none;z-index:999;display:none}
+  </style>
+</head>
+<body>
+  <!-- Encabezado fijo -->
+  <div class="appbar">
+    <div class="appbar-inner">
+      <div class="app-title">👩‍🏫 Profesora Julieta Galdames</div>
+      <div class="app-spacer"></div>
+      <div class="app-time">⏱️ <span id="timeTop">05:00</span></div>
+      <button class="btn-app" id="btnNuevoTop">🎲 Nuevo caso</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Estado de Resultados — Juego Interactivo</h1>
+    <p class="sub">Completa según el formato. Tolerancia de corrección: <b>±1%</b>. Los casos se generan <b>al azar</b> (100+ combinaciones).</p>
+
+    <div id="cronometro">Tiempo: 05:00</div>
+    <div id="timebar"><div id="timebar-fill"></div></div>
+
+    <div class="toolbar">
+      <label>Estudiante: <input type="text" id="alumno" placeholder="Ej: Ana Pérez – III°C"></label>
+      <label>Dificultad:
+        <select id="nivel">
+          <option value="1">Básico (1 producto)</option>
+          <option value="2" selected>Intermedio (2 productos)</option>
+          <option value="3">Avanzado (3 productos)</option>
+        </select>
+      </label>
+      <label>Semilla: <input type="number" id="semilla" placeholder="aleatoria"></label>
+      <button class="btn btn-secondary" id="btnNuevo">Nuevo caso al azar</button>
+      <span class="pill">Impuesto: 27%</span>
+    </div>
+
+    <!-- ENUNCIADO -->
+    <div class="enunciado" id="enunciado">
+      <h3>Enunciado</h3>
+      <p>Presiona <b>Nuevo caso al azar</b> para generar un escenario con cantidades, precios de venta y costos de compra, más una lista de gastos del período.</p>
+    </div>
+
+    <!-- TABLA ER -->
+    <table>
+      <tr>
+        <td style="width:260px">+ Ingreso por venta</td>
+        <td>
+          <div class="cell-wrapper">
+            <input class="er" id="ventas" type="text" inputmode="numeric" placeholder="$ 0">
+            <span class="icon ok-icon" id="ventas-ok">✔</span>
+            <span class="icon bad-icon" id="ventas-bad">✘</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>- Costo de venta</td>
+        <td>
+          <div class="cell-wrapper">
+            <input class="er" id="costo" type="text" inputmode="numeric" placeholder="$ 0">
+            <span class="icon ok-icon" id="costo-ok">✔</span>
+            <span class="icon bad-icon" id="costo-bad">✘</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>= <b>Margen bruto</b></td>
+        <td>
+          <div class="cell-wrapper">
+            <input class="er" id="margen" type="text" inputmode="numeric" placeholder="$ 0">
+            <span class="icon ok-icon" id="margen-ok">✔</span>
+            <span class="icon bad-icon" id="margen-bad">✘</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>- Gastos de administración y venta</td>
+        <td>
+          <div class="cell-wrapper">
+            <input class="er" id="gastos" type="text" inputmode="numeric" placeholder="$ 0">
+            <span class="icon ok-icon" id="gastos-ok">✔</span>
+            <span class="icon bad-icon" id="gastos-bad">✘</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>= <b>Utilidad antes del impuesto</b></td>
+        <td>
+          <div class="cell-wrapper">
+            <input class="er" id="utilAntes" type="text" inputmode="numeric" placeholder="$ 0">
+            <span class="icon ok-icon" id="utilAntes-ok">✔</span>
+            <span class="icon bad-icon" id="utilAntes-bad">✘</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>- Impuesto a la renta</td>
+        <td>
+          <div class="cell-wrapper">
+            <input class="er" id="impuesto" type="text" inputmode="numeric" placeholder="$ 0">
+            <span class="icon ok-icon" id="impuesto-ok">✔</span>
+            <span class="icon bad-icon" id="impuesto-bad">✘</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>= <b>Utilidad después de impuesto</b></td>
+        <td>
+          <div class="cell-wrapper">
+            <input class="er" id="utilDespues" type="text" inputmode="numeric" placeholder="$ 0">
+            <span class="icon ok-icon" id="utilDespues-ok">✔</span>
+            <span class="icon bad-icon" id="utilDespues-bad">✘</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="toolbar" style="justify-content:center">
+      <button class="btn btn-primary" id="btnRevisar">Revisar</button>
+      <button class="btn btn-secondary" id="btnReset">Reiniciar</button>
+    </div>
+
+    <p id="resultado" style="margin-top:8px;text-align:center;font-weight:bold"></p>
+    <p class="sub" style="font-size:12px">Pista: Margen bruto = Ingreso por venta − Costo de venta. Utilidad antes = Margen − Gastos. Impuesto = 27% de Utilidad antes. Utilidad después = Utilidad antes − Impuesto.</p>
+  </div>
+
+  <!-- Confeti y overlays -->
+  <canvas id="confeti"></canvas>
+  <div id="overlay">
+    <div style="font-size:84px;line-height:1">💣</div>
+    <p style="margin:8px 0 16px">¡La bomba explotó! Se acabó el tiempo.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn-ghost" id="btnCerrarBomb">Cerrar</button>
+      <button class="btn btn-primary" id="btnNuevoBomb">🎲 Nuevo caso al azar</button>
+    </div>
+  </div>
+  <div id="overlayOk">
+    <p style="font-size:64px;margin:0">🎉</p>
+    <p style="margin:6px 0 16px">¡Felicidades! Respondiste correctamente a tiempo!</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn-ghost" id="btnCerrarOk">Cerrar</button>
+      <button class="btn btn-primary" id="btnNuevoOk">🎲 Nuevo caso al azar</button>
+    </div>
+  </div>
+
+  <script>
+    // ===== Utilidades de formato
+    function fmt(n){return Number(n).toLocaleString('es-CL');}
+    function toAccounting(n){if(!isFinite(n))return'';n=Math.round(n);const abs=n.toLocaleString('es-CL');const core=`$ ${abs}`;return n<0?`(${core})`:core;}
+    function parseAccounting(str){if(str==null)return NaN;str=String(str).trim();if(!str)return NaN;const neg=/[()\-]/.test(str);const digits=str.replace(/[^0-9]/g,'');if(!digits)return NaN;const num=parseInt(digits,10);return neg?-num:num;}
+    function tolOk(v,o){v=Number(v);o=Number(o);if(!isFinite(v)||!isFinite(o))return false;const tol=Math.abs(o*0.01);return Math.abs(v-o)<=tol;}
+    function ocultarOverlays(){overlay.style.display='none';overlayOk.style.display='none';}
+
+    // ===== Sonidos
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;let actx=null;function ensureAudio(){if(!actx)actx=new AudioCtx();}
+    function tone(f=440,d=.25,t='sine',vol=.1){ensureAudio();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.value=f;g.gain.value=vol;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);} 
+    function soundTimeUp(){tone(220,.25,'sawtooth',.12);setTimeout(()=>tone(140,.25,'sawtooth',.12),260);setTimeout(()=>tone(70,.45,'square',.18),520);} 
+    function soundSuccess(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.18,'triangle',.12),i*160));}
+
+    // ===== Cronómetro
+    const DURACION=300;let tiempoRestante=DURACION,intervalo=null,exitoMostrado=false,finMostrada=false,vibrado=false;const cron=document.getElementById('cronometro');const tfill=document.getElementById('timebar-fill');const timeTop=document.getElementById('timeTop');
+    function formatear(s){const m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`}
+    function renderCrono(){const txt=formatear(tiempoRestante);cron.textContent=`Tiempo: ${txt}`;timeTop.textContent=txt;const pct=(DURACION-tiempoRestante)/DURACION*100;tfill.style.width=pct+'%';}
+    function detenerTimer(){if(intervalo){clearInterval(intervalo);intervalo=null;}}
+    function iniciarTimer(){detenerTimer();tiempoRestante=DURACION;exitoMostrado=false;finMostrada=false;vibrado=false;renderCrono();intervalo=setInterval(()=>{tiempoRestante=Math.max(0,tiempoRestante-1);if(tiempoRestante===60&&!vibrado){cron.classList.add('shake');setTimeout(()=>cron.classList.remove('shake'),1200);if(navigator.vibrate)navigator.vibrate([200,100,200]);vibrado=true;}renderCrono();if(tiempoRestante===0&&!finMostrada&&!exitoMostrado){mostrarBomba();soundTimeUp();detenerTimer();}},1000);} 
+
+    // ===== Confeti y overlays
+    const overlay=document.getElementById('overlay');
+    const overlayOk=document.getElementById('overlayOk');
+    function mostrarBomba(){finMostrada=true;overlay.style.display='flex';['ventas','costo','margen','gastos','utilAntes','impuesto','utilDespues'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=true;});}
+    function lanzarConfeti(){const canvas=document.getElementById('confeti'),ctx=canvas.getContext('2d');canvas.width=innerWidth;canvas.height=innerHeight;canvas.style.display='block';const piezas=Array.from({length:180}).map(()=>({x:Math.random()*canvas.width,y:-Math.random()*canvas.height,w:8,h:14,color:`hsl(${Math.random()*360},100%,50%)`,vy:2+Math.random()*4,vx:-2+Math.random()*4}));let tEnd=Date.now()+4500;(function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);piezas.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.y>canvas.height){p.y=-10;p.x=Math.random()*canvas.width;}ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,p.w,p.h);});if(Date.now()<tEnd){requestAnimationFrame(anim);}else{canvas.style.display='none';}})();}
+    function mostrarFelicidades(){exitoMostrado=true;overlayOk.style.display='flex';lanzarConfeti();soundSuccess();detenerTimer();}
+
+    // ===== Generación de casos
+    function mulberry32(a){return function(){var t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}};
+    function choice(arr,rnd){return arr[Math.floor(rnd()*arr.length)];}
+    function int(min,max,rnd){return Math.floor(rnd()*(max-min+1))+min;}
+    const PRODUCTOS=[
+      {n:'cargadores de celular USB-A 12W',pv:[12990,14990,19990,21990],pc:[6500,7900,9900,12500]},
+      {n:'cargadores de notebook 85W',pv:[55990,65990,75990],pc:[29900,38200,52200]},
+      {n:'audífonos bluetooth',pv:[14990,19990,24990],pc:[7000,10500,13500]},
+      {n:'teclados mecánicos',pv:[24990,34990,44990],pc:[14000,21000,27000]},
+      {n:'mouses gamer',pv:[12990,17990,22990],pc:[6000,9000,12000]},
+      {n:'discos SSD 480GB',pv:[34990,39990,45990],pc:[22000,26000,30000]}
+    ];
+    const GASTOS=["Sueldos del personal","Arriendo mobiliario","Servicios básicos (luz, agua, gas, internet)","Publicidad y marketing","Transporte y despacho","Mantención y limpieza"];
+    let activo=null;
+    function generarCaso(nivel,semilla){
+      const rnd=mulberry32(semilla||Math.floor(Math.random()*1e9));
+      const numProd=Math.max(1,Math.min(3,Number(nivel)||2));
+      const productosSel=[]; const usados=new Set();
+      for(let i=0;i<numProd;i++){
+        let p; do{p=choice(PRODUCTOS,rnd);}while(usados.has(p?.n)); usados.add(p.n);
+        const unidades=int(800,5000,rnd);
+        const pv=choice(p.pv,rnd); const pc=choice(p.pc,rnd);
+        productosSel.push({nombre:p.n,unidades,pv,pc});
+      }
+      const numG=int(3,4,rnd); const gastosSel=[]; const gUsed=new Set();
+      for(let i=0;i<numG;i++){
+        let g; do{g=choice(GASTOS,rnd);}while(gUsed.has(g)); gUsed.add(g);
+        const monto=int(1200000,8000000,rnd)/100*100; gastosSel.push({nombre:g,monto});
+      }
+      const ventas=Math.round(productosSel.reduce((s,x)=>s+x.unidades*x.pv,0));
+      const costo=Math.round(productosSel.reduce((s,x)=>s+x.unidades*x.pc,0));
+      const gastos=Math.round(gastosSel.reduce((s,x)=>s+x.monto,0));
+      const margen=ventas-costo; const utilAntes=margen-gastos; const impuesto=Math.round(utilAntes*0.27); const utilDespues=utilAntes-impuesto;
+      const id=`C-${(semilla||0).toString(36)}-${numProd}-${productosSel.length}${int(10,99,rnd)}`;
+      return {id,productosSel,gastosSel,ventas,costo,gastos,margen,utilAntes,impuesto,utilDespues,impuestoPct:0.27};
+    }
+    function mostrarEnunciado(c){
+      const prodLines=c.productosSel.map(p=>`- ${p.unidades} unidades de <b>${p.nombre}</b> a $${fmt(p.pv)} c/u (costo $${fmt(p.pc)} c/u)`).join('<br>');
+      const gastosLines=c.gastosSel.map(g=>`- ${g.nombre}: $${fmt(g.monto)}`).join('<br>');
+      enunciado.innerHTML=`<h3>Enunciado — Caso ${c.id}</h3><p>Se conoce que las ventas del período ascienden a las siguientes cantidades y precios:</p><p>${prodLines}</p><p>Además, se incurrió en los siguientes gastos del período:</p><p>${gastosLines}</p><p><i>Completa el Estado de Resultados: <b>Ingreso por venta</b>, <b>Costo de venta</b>, <b>Margen bruto</b>, <b>Gastos A&V</b>, <b>Utilidad antes</b>, <b>Impuesto (27%)</b> y <b>Utilidad después</b>.</i></p>`;
+    }
+
+    // ===== Corrección
+    function marcar(id,correcto){
+      const campo=document.getElementById(id);
+      const okIcon=document.getElementById(id+'-ok');
+      const badIcon=document.getElementById(id+'-bad');
+      const valor=parseAccounting(campo.value);
+      if(tolOk(valor,correcto)){
+        campo.classList.add('ok'); campo.classList.remove('bad');
+        okIcon.style.display='inline'; badIcon.style.display='none';
+      } else {
+        campo.classList.add('bad'); campo.classList.remove('ok');
+        okIcon.style.display='none'; badIcon.style.display='inline';
+      }
+    }
+    function limpiarCampos(){
+      ['ventas','costo','margen','gastos','utilAntes','impuesto','utilDespues'].forEach(id=>{
+        const el=document.getElementById(id);
+        el.value=''; el.classList.remove('ok','bad'); el.disabled=false;
+        document.getElementById(id+'-ok').style.display='none';
+        document.getElementById(id+'-bad').style.display='none';
+      });
+      resultado.textContent=''; ocultarOverlays();
+    }
+
+    // ===== Eventos
+    function genNuevoCaso(){
+      const nivel=Number(document.getElementById('nivel').value)||2;
+      const semilla=Number(document.getElementById('semilla').value)||Math.floor(Math.random()*1e9);
+      activo=generarCaso(nivel,semilla);
+      mostrarEnunciado(activo);
+      limpiarCampos();
+      iniciarTimer();
+      resultado.textContent=`Caso ${activo.id} generado (semilla ${semilla}).`;
+    }
+    document.getElementById('btnNuevo').addEventListener('click',genNuevoCaso);
+    document.getElementById('btnNuevoTop').addEventListener('click',genNuevoCaso);
+    document.getElementById('btnReset').addEventListener('click',()=>{limpiarCampos();renderCrono();});
+    document.getElementById('btnRevisar').addEventListener('click',()=>{
+      if(!activo){ alert('Primero genera un caso al azar.'); return; }
+      if(tiempoRestante===0){ alert('Tiempo agotado.'); return; }
+      const ids=['ventas','costo','margen','gastos','utilAntes','impuesto','utilDespues'];
+      ids.forEach(id=>marcar(id,activo[id]));
+      const aciertos=ids.map(id=>document.getElementById(id).classList.contains('ok')).filter(Boolean).length;
+      resultado.textContent=`Correctos: ${aciertos}/7 (tolerancia ±1%)`;
+      if(aciertos===7){ if(tiempoRestante>0){ mostrarFelicidades(); } else { alert('¡Correcto, pero fuera de tiempo (5 min)!'); } }
+    });
+    // Overlays botones
+    document.addEventListener('click',e=>{
+      if(e.target && e.target.id==='btnCerrarBomb') overlay.style.display='none';
+      if(e.target && e.target.id==='btnNuevoBomb'){ overlay.style.display='none'; genNuevoCaso(); }
+      if(e.target && e.target.id==='btnCerrarOk') overlayOk.style.display='none';
+      if(e.target && e.target.id==='btnNuevoOk'){ overlayOk.style.display='none'; genNuevoCaso(); }
+    });
+
+    // ===== Formato contable automático
+    (function setupFormat(){
+      document.querySelectorAll('input.er').forEach(el=>{
+        el.addEventListener('input',()=>{
+          let n=parseAccounting(el.value);
+          if(isNaN(n)) { el.value='$ '; return; }
+          el.value=toAccounting(n);
+        });
+        el.addEventListener('blur',()=>{
+          let n=parseAccounting(el.value); if(!isNaN(n)) el.value=toAccounting(n);
+        });
+        el.addEventListener('focus',()=>{
+          let n=parseAccounting(el.value); if(!isNaN(n)) el.value=toAccounting(n);
+        });
+      });
+    })();
+
+    // Init
+    renderCrono();
+  </script>
+</body>
+</html>
